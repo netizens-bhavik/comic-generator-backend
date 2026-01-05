@@ -188,12 +188,23 @@ CRITICAL CHARACTER CONSISTENCY:
 - Maintain exact same appearance, clothing, hairstyle, and physical features as shown in the reference
 - Character appearance must be consistent across all panels
 
+CRITICAL STYLE REQUIREMENTS - MUST BE STRICTLY ENFORCED:
+- Generate this image EXCLUSIVELY in classic American comic book style
+- Use bold, black ink outlines and borders around all characters and objects
+- Apply vibrant, saturated colors typical of comic books (no realistic/photographic style)
+- Include halftone dots or crosshatching patterns for shading (comic book style shading)
+- Use strong contrast between foreground and background
+- Style should resemble Marvel, DC, or classic comic book illustrations
+- NO realistic photography style, NO watercolor, NO soft pastel styles
+- MUST look like a traditional printed comic book panel
+
 IMPORTANT LAYOUT REQUIREMENTS:
 - This image will be displayed in a ${panelLayout}
 - Use ${aspectRatio} aspect ratio
 - Ensure the composition fits well in this format without stretching or distortion
 - Center the main action/subject in the frame
-- Make sure important elements are not cut off at the edges`;
+- Make sure important elements are not cut off at the edges
+- Maintain proper aspect ratio - do not stretch or distort the image`;
 
   try {
     const base64Data = originalImageBase64.split(',')[1];
