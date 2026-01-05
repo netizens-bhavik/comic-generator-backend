@@ -197,31 +197,92 @@ export const generatePanelImage = async (
     ? "full-width panel at the bottom of the page"
     : "side-by-side panel in the top or middle row";
 
+  // Negative style guard to prevent unwanted styles
+  const negativeStyleGuard = `
+NEGATIVE PROMPT:
+photo, photograph, photorealistic, realistic, ultra-detailed,
+cinematic lighting, soft lighting, studio lighting,
+3d render, blender, unreal engine,
+digital painting, concept art,
+anime, manga, chibi,
+pixar, disney, dreamworks,
+ai generated, midjourney style,
+smooth shading, gradients, realism
+`;
+
   // Build enhanced prompt using character consistency utilities
-  const basePrompt = buildImagePromptWithConsistency(
+  const consistencyPrompt = buildImagePromptWithConsistency(
     sceneDescription,
     characterNames,
     finalCharacterDescriptions,
     "the provided reference image"
   );
 
-  // Add aspect ratio and layout information with STRICT comic book style enforcement
-  const prompt = `${basePrompt}
+  // Combine negative guard with consistency prompt
+  const basePrompt = `
+${negativeStyleGuard}
+${consistencyPrompt}
+`;
 
-REMINDER - STYLE IS CRITICAL:
-- This MUST be a classic American comic book illustration - cartoon style, NOT realistic
-- The reference image is ONLY for character appearance - transform it into comic book style
-- Use bold black outlines, flat vibrant colors, halftone shading
-- NO photographic realism - this is a children's comic book panel
-- Characters should be cartoon versions, not photorealistic copies
+  // Final prompt with absolute style contract
+  const prompt = `
+${basePrompt}
 
-IMPORTANT LAYOUT REQUIREMENTS:
-- This image will be displayed in a ${panelLayout}
-- Use ${aspectRatio} aspect ratio
-- Ensure the composition fits well in this format without stretching or distortion
-- Center the main action/subject in the frame
-- Make sure important elements are not cut off at the edges
-- Maintain proper aspect ratio - do not stretch or distort the image`;
+==============================
+ABSOLUTE STYLE CONTRACT (MUST FOLLOW)
+==============================
+
+This image MUST look like a CLASSIC AMERICAN COMIC BOOK PANEL.
+
+STYLE REQUIREMENTS (NON-NEGOTIABLE):
+- Hand-drawn comic book illustration
+- Thick black ink outlines around ALL characters and objects
+- Flat, solid colors (NO gradients, NO soft shading)
+- Simple cel shading only (1–2 shadow tones max)
+- Halftone dot texture for shadows and backgrounds
+- Bold, high-contrast color palette
+- Slightly exaggerated cartoon proportions
+- 2D illustration ONLY
+
+REFERENCE STYLE:
+- Classic Marvel / DC comic books (Silver–Bronze Age)
+- Saturday morning superhero comics
+- Children's comic books from printed pages
+
+STRICTLY FORBIDDEN (DO NOT USE):
+- Photorealism
+- Semi-realistic illustration
+- Digital painting
+- AI-art look
+- Pixar, Disney, DreamWorks style
+- Anime or manga style
+- 3D rendering
+- Soft lighting
+- Airbrushed shading
+- Painterly textures
+- Realistic skin, fabric, or lighting
+- Cinematic lighting
+- Depth-of-field blur
+
+IMPORTANT CHARACTER RULES:
+- The uploaded photo is ONLY for facial identity and body shape
+- DO NOT copy lighting, skin texture, or realism from the photo
+- Convert the character into a CARTOON COMIC VERSION
+- Same clothes, same colors, same hairstyle, same face in EVERY panel
+
+LAYOUT & COMPOSITION:
+- ${panelLayout}
+- ${aspectRatio}
+- Clean framing like a printed comic panel
+- No cropped faces or limbs
+- Center the main action clearly
+
+FINAL CHECK BEFORE OUTPUT:
+Ask yourself: "Would this image look correct printed in a children's comic book?"
+If not, FIX IT.
+
+OUTPUT ONLY THE IMAGE. NO TEXT.
+`;
 
   try {
     const base64Data = originalImageBase64.split(',')[1];
