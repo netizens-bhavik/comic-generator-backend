@@ -2,6 +2,7 @@ import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { 
   buildImagePromptWithConsistency,
   createCharacterDescription,
+  extractCharacterDescriptionsFromScript,
   CharacterDescription
 } from "./characterConsistency";
 
@@ -11,6 +12,156 @@ const getAiClient = () => {
     throw new Error("API Key is missing. Please check your environment variables.");
   }
   return new GoogleGenAI({ apiKey });
+};
+
+// --- Image Analysis ---
+
+export interface FaceAnalysisResult {
+    faceCount: number;
+    characters: {
+        gender: 'Boy' | 'Girl' | 'Man' | 'Woman';
+        estimatedAge: number; // We still infer this for internal generation prompt
+        position: 'Left' | 'Right' | 'Center' | 'Single';
+    }[];
+}
+
+export const analyzeImageFaces = async (imageBase64: string): Promise<FaceAnalysisResult> => {
+    const ai = getAiClient();
+    const base64Data = imageBase64.split(',')[1];
+
+    const prompt = `
+      Analyze this image and identify the human faces.
+      Return a JSON object with:
+      1. faceCount: Total number of distinct faces.
+      2. characters: Array of objects for each face found (max 2), containing:
+         - gender: 'Boy', 'Girl', 'Man', or 'Woman'.
+         - estimatedAge: Integer (guess the age).
+         - position: Where they are in the image ('Left', 'Right', 'Center').
+
+      If more than 2 faces, just return the 2 most prominent ones.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: {
+                parts: [
+                    { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
+                    { text: prompt }
+                ]
+            },
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        faceCount: { type: Type.INTEGER },
+                        characters: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    gender: { type: Type.STRING, enum: ['Boy', 'Girl', 'Man', 'Woman'] },
+                                    estimatedAge: { type: Type.INTEGER },
+                                    position: { type: Type.STRING }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const text = response.text;
+        if (!text) throw new Error("No analysis returned");
+        return JSON.parse(text) as FaceAnalysisResult;
+
+    } catch (e) {
+        console.error("Face analysis failed", e);
+        // Fallback default
+        return {
+            faceCount: 1,
+            characters: [{ gender: 'Boy', estimatedAge: 10, position: 'Center' }]
+        };
+    }
+};
+
+// --- Character Avatar Generation ---
+
+export const generateCharacterVariations = async (
+  imageBase64: string,
+  gender: string
+): Promise<string[]> => {
+  const ai = getAiClient();
+  const base64Data = imageBase64.split(',')[1];
+
+  // We will generate 4 variations in parallel
+  const prompt = `
+  Generate a high-quality portrait of a ${gender} in a CLASSIC AMERICAN COMIC BOOK style.
+
+  CRITICAL INSTRUCTION: EXACT CARTOON FACE REPLICA
+  - The face in the output image MUST BE AN EXACT CARTOON REPLICA of the face in the input image.
+  - TRANSFORM the facial features into a simplified, iconic CARTOON representation while maintaining recognition.
+  - Keep the exact eye shape, nose shape, mouth shape, jawline, and ear shape, but RENDERED WITH SIMPLIFIED, THICK LINES AND FLAT SHAPES.
+  - Keep the exact hair style and hair color, but RENDERED AS A CARTOON.
+  - ONLY change the art style to "CLASSIC AMERICAN COMIC BOOK" (bold lines, COMPLETELY FLAT colors, simple cel shading), do NOT change the facial structure into realism.
+  - The background should be a simple solid, flat color or a very simple, flat gradient.
+  - Close-up shot (head and shoulders, or chest up).
+  
+  STYLE REQUIREMENTS (NON-NEGOTIABLE):
+  - CLASSIC AMERICAN COMIC BOOK illustration style, HIGHLY CARTOONIZED.
+  - EXTREMELY THICK black ink outlines around ALL features, hair, and edges.
+  - COMPLETELY FLAT, VIBRANT, SOLID COLORS (ABSOLUTELY NO gradients, NO soft shading, NO color blending).
+  - VERY SIMPLE cel shading ONLY (1–2 harsh shadow tones max, applied as solid blocks of color).
+  - Hand-drawn, graphic, bold cartoon appearance.
+  - STRICTLY 2D illustration ONLY.
+  
+  STRICTLY FORBIDDEN (DO NOT USE):
+  - Photorealism, realistic rendering, hyperrealism, semi-realism, fine art.
+  - 3D appearance, CGI, rendered looks.
+  - Digital painting style, soft brush strokes, painterly effects.
+  - Subtle lighting, realistic shadows, atmospheric effects, depth-of-field.
+  - Skin texture, hair texture, pores, wrinkles, or any form of realistic detail.
+  - Anime, Manga, Pixar, Disney, DreamWorks style (THESE ARE TOO DETAILED).
+  - Any AI-art polish or smooth rendering.
+`;
+
+  const generateOne = async (): Promise<string | null> => {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-pro-image-preview',
+        contents: {
+          parts: [
+            { inlineData: { data: base64Data, mimeType: 'image/jpeg' } },
+            { text: prompt },
+          ],
+        },
+        config: {
+          responseModalities: [Modality.IMAGE],
+        },
+      });
+
+      const parts = response.candidates?.[0]?.content?.parts;
+      if (parts && parts.length > 0) {
+        for (const part of parts) {
+          if (part.inlineData && part.inlineData.data) {
+            return `data:image/png;base64,${part.inlineData.data}`;
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error("Avatar generation failed", e);
+      return null;
+    }
+  };
+
+  // Run 4 generations in parallel
+  const promises = [generateOne(), generateOne(), generateOne(), generateOne()];
+  const results = await Promise.all(promises);
+
+  // Filter out nulls
+  return results.filter((img): img is string => img !== null);
 };
 
 export interface ComicPanel {
@@ -43,47 +194,58 @@ export const generateComicScript = async (
   const charsDescription = `${mainChar}${secondChar}`;
 
   const consistencyInstructions = `
-  CRITICAL CHARACTER CONSISTENCY REQUIREMENTS (STRICT — MUST BE FOLLOWED):
+  CRITICAL CHARACTER, STYLE, AND ILLUSTRATION REQUIREMENTS
+  (ABSOLUTE — NO EXCEPTIONS — MUST BE FOLLOWED):
   
-  IDENTITY LOCK (NO VARIATION ALLOWED):
-  - Once a character appears, their appearance is LOCKED for the entire comic.
-  - Facial structure, face shape, skin tone, eye shape, nose, mouth, body type, height, and proportions MUST remain EXACTLY the same in ALL panels.
-  - Clothing, colors, hairstyle, accessories, and footwear MUST be IDENTICAL in every panel.
-  - NO changes, upgrades, damage, aging, or stylistic variation are allowed between panels.
+  PURE CARTOON ILLUSTRATION MODE (NO REALISM WHATSOEVER):
+  - ALL images MUST be fully illustrated, artistic, and EXTREMELY CARTOON-LIKE.
+  - The output MUST look SIMPLISTICALLY HAND-DRAWN, not rendered, not painted, and ABSOLUTELY NOT realistic.
+  - The image MUST resemble VINTAGE PRINTED CHILDREN'S COMIC BOOK ART, NOT modern digital illustration.
+  - EXTREMELY THICK, VISIBLE LINE ART MUST DOMINATE THE IMAGE.
   
-  REFERENCE IMAGE USAGE (IDENTITY ONLY):
-  - The main character (${mainChar}) MUST be based on the uploaded photo ONLY to extract identity (face and body shape).
-  - The uploaded image MUST NEVER be rendered as a real photo or realistic drawing.
-  - DO NOT copy photographic lighting, shadows, skin texture, pores, wrinkles, fabric texture, or realism from the image.
-  - The character MUST ALWAYS be transformed into a CARTOON COMIC-BOOK VERSION.
+  ILLUSTRATOR STYLE LOCK:
+  - All panels MUST appear drawn by ONE single human comic illustrator, with a VERY SIMPLISTIC, BOLD STYLE.
+  - The illustrator style is LOCKED from Panel 1 and MUST NOT change.
+  - Line thickness, inking pressure, facial simplification (to cartoon level), and proportions MUST remain consistent.
+  - No refinement, smoothing, or realism improvements are allowed in later panels.
   
-  STRICT COMIC BOOK STYLE — NO EXCEPTIONS:
-  - ALL images MUST be classic American comic book illustrations.
-  - 2D hand-drawn cartoon style ONLY.
-  - Thick black ink outlines around characters and objects.
-  - Flat, solid colors with simple cel shading (no gradients).
-  - Halftone dots for shadows and backgrounds.
-  - Bold, vibrant colors suitable for children’s comic books.
+  STRICT CARTOON COMIC STYLE:
+  - STRICTLY 2D cartoon illustration ONLY.
+  - EXTREMELY THICK, uneven black ink outlines (clearly visible and defining all shapes).
+  - HEAVILY SIMPLIFIED facial features (bold cartoon proportions, NO anatomical accuracy).
+  - COMPLETELY FLAT, POSTER-LIKE COLORS (NO gradients, NO blending, NO subtle color variations).
+  - VERY SIMPLE cel shading (optional, 1 solid shadow tone maximum, applied as graphic blocks).
+  - Halftone dots or solid, flat fills for shadows.
+  - Significant exaggeration of heads, eyes, and expressions (child-friendly, like classic comics).
   
-  ABSOLUTELY FORBIDDEN (NEVER ALLOWED):
-  - Real photos or photo-like images
-  - Photorealistic or semi-realistic rendering
-  - AI-art realism
-  - Digital painting or painterly styles
-  - 3D rendering, Pixar/Disney/DreamWorks styles
-  - Anime, manga, or cinematic styles
-  - Soft lighting, realistic shadows, depth-of-field, or blur
+  ABSOLUTELY FORBIDDEN (ZERO TOLERANCE):
+  - Real photos or photo-based rendering, NO PHOTOMANIPULATION.
+  - Realistic or semi-realistic illustration, detailed illustration.
+  - Painterly art, concept art, or AI-art polish, no sophisticated rendering.
+  - Digital painting or smooth brush strokes, no airbrushing.
+  - 3D, CGI, or rendered looks.
+  - Pixar / Disney / DreamWorks, Anime / manga (THESE STYLES ARE TOO DETAILED AND REALISTIC).
+  - Cinematic lighting, realistic shadows, blur, or depth-of-field.
+  - Skin texture, fabric texture, pores, wrinkles, individual hair strands, or any form of lighting realism.
   
-  STYLE IMMUTABILITY:
-  - The comic style MUST NOT change, evolve, or drift between panels.
-  - Every panel must look like it was drawn by the SAME comic artist on the SAME printed page.
+  REFERENCE IMAGE USAGE (IDENTITY EXTRACTION ONLY FOR CARTOON TRANSFORMATION):
+  - The uploaded photo is ONLY to identify the basic face shape and body type for a CARTOON TRANSFORMATION.
+  - DO NOT copy lighting, texture, or realism from the photo AT ALL.
+  - Convert the character into a SIMPLIFIED, BOLD, GRAPHIC CARTOON COMIC CHARACTER.
+  - The result must NEVER look like a real person, it must always look like a DRAWING.
+  
+  CHARACTER IDENTITY LOCK:
+  - Once introduced, the character's CARTOON appearance is LOCKED.
+  - Same simplified cartoon face shape, same cartoon features, same cartoon clothes, same flat colors, same cartoon hairstyle in ALL panels.
+  - No costume changes, damage, aging, or visual variation.
   
   DESCRIPTION ENFORCEMENT:
-  - Every scene description MUST restate key visual traits
-    (example: “same red hoodie, same short black hair, same round face, same sneakers”).
+  - Every scene description MUST repeat key cartoon traits and visual style
+    (example: "a cartoon girl with big round cartoon eyes, wearing a simple red hoodie with flat colors, drawn with thick black outlines").
   
-  FINAL RULE:
-  - If an image looks like a real photo or realistic illustration, it is WRONG and MUST be corrected into comic book style.
+  FINAL VALIDATION RULE:
+  - If the image looks like it could be mistaken for a real person or realistic illustration in ANY WAY, it is WRONG.
+  - The image must clearly look like a BOLD, SIMPLIFIED CARTOON DRAWING at first glance.
   `;
   
 
@@ -94,7 +256,7 @@ export const generateComicScript = async (
     IMPORTANT: Use very simple, basic English suitable for young children (ages 5-8).
     
     Inputs:
-    1. Characters: ${charsDescription}. (The main character looks like the person in the uploaded photo).
+    1. Characters: ${charsDescription}.
     2. Selected Category: ${category}
     3. Story Source: ${sourceType === 'Predefined' ? 'Pick a classic trope from this category' : 'Create a fresh, original short story'}
 
@@ -111,6 +273,7 @@ export const generateComicScript = async (
     
     Output Constraints:
     - Title: A catchy, simple name for this story.
+    - Visual Signature: Define a specific outfit for the main character (e.g., "red cape and blue shirt") and INCLUDE it in every 'scene' description.
     - Box 1: Scene Description (visuals) & Narration (simple text). Include specific character appearance details. Opening scene. Describe scenes as they would appear in a comic book (cartoon style, not realistic).
     - Box 2: Scene Description (visuals) & Narration (simple text). Ensure characters look identical to Box 1. Rising action. Describe in comic book style.
     - Box 3: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. Development. Describe in comic book style.
@@ -119,6 +282,7 @@ export const generateComicScript = async (
     - Tone: Fun, exciting, and safe.
     - Safety: No violent, scary, or harmful content.
     - Style Note: All scene descriptions should be written with comic book illustration style in mind (cartoon, vibrant colors, bold outlines).
+    - Character Context: The main character looks like the person in the uploaded photo, but rendered in comic book/cartoon style.
   `;
 
   // Using Gemini 2.5 Flash for text logic
@@ -235,14 +399,15 @@ export const generatePanelImage = async (
   // Negative style guard to prevent unwanted styles
   const negativeStyleGuard = `
 NEGATIVE PROMPT:
-photo, photograph, photorealistic, realistic, ultra-detailed,
-cinematic lighting, soft lighting, studio lighting,
+photo, photograph, photorealistic, realistic, ultra-detailed, hyperrealistic,
+cinematic lighting, soft lighting, studio lighting, natural lighting,
 3d render, blender, unreal engine,
-digital painting, concept art,
+digital painting, concept art, fine art, detailed brushstrokes,
 anime, manga, chibi,
 pixar, disney, dreamworks,
 ai generated, midjourney style,
-smooth shading, gradients, realism
+smooth shading, gradients, realism, complex textures, subtle highlights, skin pores, individual hair strands,
+anatomically precise rendering, painterly style, airbrushed look
 `;
 
   // Build enhanced prompt using character consistency utilities
@@ -253,11 +418,25 @@ smooth shading, gradients, realism
     "the provided reference image"
   );
 
+  const styleOverride = `
+  STYLE OVERRIDE — READ FIRST:
+  
+  This is NOT a photo.
+  This is NOT a realistic illustration.
+  This is NOT digital painting or fine art.
+  
+  This image MUST be a LOW-FIDELITY, SIMPLISTIC, HAND-DRAWN CARTOON COMIC.
+  Intentionally simple. Intentionally exaggerated.
+  Looks like it was drawn with basic ink pens and solid color markers on paper.
+  Think minimal detail, clear graphic shapes.
+  `;
+
   // Combine negative guard with consistency prompt
   const basePrompt = `
-${negativeStyleGuard}
-${consistencyPrompt}
-`;
+  ${styleOverride}
+  ${negativeStyleGuard}
+  ${consistencyPrompt}
+  `;
 
   // Final prompt with absolute style contract
   const prompt = `
@@ -267,54 +446,67 @@ ${basePrompt}
 ABSOLUTE STYLE CONTRACT (MUST FOLLOW)
 ==============================
 
-This image MUST look like a CLASSIC AMERICAN COMIC BOOK PANEL.
+This image MUST look like a CLASSIC AMERICAN COMIC BOOK PANEL,
+specifically a CHILDRENS' COMIC, with an EXTREMELY CARTOONISH and SIMPLIFIED aesthetic.
+
+CRITICAL INSTRUCTION: IDENTITY PRESERVATION (CARTOON AVATAR)
+- The main character in this scene MUST LOOK EXACTLY like the person in the provided reference image,
+  BUT AS A SIMPLIFIED, CARTOON AVATAR.
+- Maintain the same facial features, hair color/style, and skin tone,
+  but TRANSFORM them into a stylized, graphic comic representation.
+- Keep the exact eye shape, nose shape, mouth shape, jawline, and ear shape,
+  but RENDERED WITH SIMPLIFIED LINES AND FLAT SHAPES.
+- Do not change the face structure - only convert it into a BOLD, CARTOON comic style.
+- Same simplified CARTOON clothes, same flat colors, same CARTOON hairstyle, same CARTOON face in EVERY panel.
+- AVOID ANY HINT OF PHOTO-REALISTIC DETAIL on the character's face, skin, or hair.
 
 STYLE REQUIREMENTS (NON-NEGOTIABLE):
-- Hand-drawn comic book illustration
-- Thick black ink outlines around ALL characters and objects
-- Flat, solid colors (NO gradients, NO soft shading)
-- Simple cel shading only (1–2 shadow tones max)
-- Halftone dot texture for shadows and backgrounds
-- Bold, high-contrast color palette
-- Slightly exaggerated cartoon proportions
-- 2D illustration ONLY
+- Hand-drawn comic book illustration, HIGHLY CARTOONIZED
+- EXTREMELY THICK black ink outlines around ALL characters and objects.
+- COMPLETELY FLAT, SOLID COLORS (ABSOLUTELY NO gradients, NO soft shading, NO color blending)
+- MINIMAL cel shading ONLY (1–2 harsh shadow tones max, applied as solid blocks of color)
+- Halftone dot texture for shadows and backgrounds, IF APPLICABLE, otherwise solid blocks.
+- Bold, high-contrast, PRIMARY color palette.
+- Clearly exaggerated, cartoon proportions and expressions.
+- Strictly 2D illustration ONLY.
 
 REFERENCE STYLE:
-- Classic Marvel / DC comic books (Silver–Bronze Age)
-- Saturday morning superhero comics
-- Children's comic books from printed pages
+- Classic Marvel / DC comic books (Silver–Bronze Age), focusing on the most simplified examples
+- Saturday morning superhero comics for young children
+- Vintage children's comic books from printed pages, specifically those with very simple, graphic art.
+- Think Hanna-Barbera, Archie Comics, or very early superhero designs.
 
 STRICTLY FORBIDDEN (DO NOT USE):
-- Photorealism
-- Semi-realistic illustration
-- Digital painting
-- AI-art look
-- Pixar, Disney, DreamWorks style
-- Anime or manga style
+- Photorealism, semi-realism, hyperrealism
+- Semi-realistic illustration, detailed illustration
+- Digital painting, painterly styles, fine art rendering
+- AI-art look, sophisticated rendering
+- Pixar, Disney, DreamWorks style (TOO DETAILED)
+- Anime or manga style (TOO DETAILED)
 - 3D rendering
-- Soft lighting
-- Airbrushed shading
-- Painterly textures
-- Realistic skin, fabric, or lighting
-- Cinematic lighting
-- Depth-of-field blur
+- Soft lighting, subtle lighting, atmospheric lighting
+- Airbrushed shading, feathered edges
+- Painterly textures, complex fabric textures
+- Realistic skin, fabric, hair, or lighting details
+- Cinematic lighting, depth-of-field blur, bokeh
+- Any form of subtle shading or texture mapping.
 
 IMPORTANT CHARACTER RULES:
-- The uploaded photo is ONLY for facial identity and body shape
-- DO NOT copy lighting, skin texture, or realism from the photo
-- Convert the character into a CARTOON COMIC VERSION
-- Same clothes, same colors, same hairstyle, same face in EVERY panel
+- The uploaded photo is ONLY for establishing the core CARTOON IDENTITY and basic body shape.
+- DO NOT copy lighting, skin texture, or realism from the photo AT ALL.
+- Convert the character into a BOLD, GRAPHIC, CARTOON COMIC VERSION.
+- The character must be instantly recognizable as the same *cartoonized* person from the reference image.
 
 LAYOUT & COMPOSITION:
 - ${panelLayout}
 - ${aspectRatio}
-- Clean framing like a printed comic panel
-- No cropped faces or limbs
-- Center the main action clearly
+- Clean, simple framing like a printed comic panel.
+- No cropped faces or limbs.
+- Center the main cartoon action clearly.
 
 FINAL CHECK BEFORE OUTPUT:
-Ask yourself: "Would this image look correct printed in a children's comic book?"
-If not, FIX IT.
+Ask yourself: "Does this image look like a *very simple, hand-drawn, solid-color* children's comic book panel?"
+If not, FIX IT until it is. Is it cartoonish enough? Is it flat enough?
 
 OUTPUT ONLY THE IMAGE. NO TEXT.
 `;
@@ -367,8 +559,9 @@ export const editImageWithGemini = async (
   const ai = getAiClient();
 
   try {
-    // Clean base64 string
+    // Extract base64 and mime type
     const base64Data = imageBase64.split(',')[1];
+    const mimeType = imageBase64.split(';')[0].split(':')[1] || 'image/jpeg';
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
@@ -377,7 +570,7 @@ export const editImageWithGemini = async (
           {
             inlineData: {
               data: base64Data,
-              mimeType: 'image/jpeg', // Assuming JPEG for simplicity from canvas/input
+              mimeType: mimeType,
             },
           },
           {
