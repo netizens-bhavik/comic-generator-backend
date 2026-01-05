@@ -124,3 +124,39 @@ export const isImagePath = (str: string): boolean => {
   return str.startsWith('http') || str.startsWith('/') || str.startsWith('images/');
 };
 
+/**
+ * Convert a relative image path to a full URL with backend domain
+ * @param imagePath - Relative path (e.g., "images/filename.png" or "/uploads/images/filename.png")
+ * @returns Full URL (e.g., "https://api.mycomic.online/uploads/images/filename.png")
+ */
+export const getImageUrl = (imagePath: string): string => {
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // Get backend URL from environment variable
+  const backendUrl = process.env.BACKEND_URL || process.env.API_URL || 'https://api.mycomic.online';
+  
+  // Remove trailing slash from backend URL
+  const baseUrl = backendUrl.replace(/\/$/, '');
+  
+  // If path starts with /uploads, use it directly
+  if (imagePath.startsWith('/uploads/')) {
+    return `${baseUrl}${imagePath}`;
+  }
+  
+  // If path starts with /uploads (without trailing), add it
+  if (imagePath.startsWith('/uploads')) {
+    return `${baseUrl}${imagePath}`;
+  }
+  
+  // If path is just "images/...", add /uploads prefix
+  if (imagePath.startsWith('images/')) {
+    return `${baseUrl}/uploads/${imagePath}`;
+  }
+  
+  // Default: assume it's a relative path that needs /uploads prefix
+  return `${baseUrl}/uploads/${imagePath}`;
+};
+

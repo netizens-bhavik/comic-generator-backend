@@ -2,6 +2,7 @@ import express, { Response } from 'express';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 import pool from '../config/database.js';
 import { generateComicScript, generatePanelImage } from '../services/gemini.js';
+import { getImageUrl } from '../services/imageUpload.js';
 
 const router = express.Router();
 
@@ -75,6 +76,26 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
       panels = {};
     }
 
+    // Convert image paths to full URLs with backend domain
+    const convertImagePath = (path: string): string => {
+      if (!path || path.startsWith('http') || path.startsWith('data:image/')) {
+        return path;
+      }
+      return getImageUrl(path);
+    };
+
+    // Convert originalImage to full URL
+    const originalImageUrl = convertImagePath(comic.original_image);
+
+    // Convert panel imageUrls to full URLs
+    const panelsWithFullUrls = {
+      box1: panels.box1 ? { ...panels.box1, imageUrl: panels.box1.imageUrl ? convertImagePath(panels.box1.imageUrl) : undefined } : panels.box1,
+      box2: panels.box2 ? { ...panels.box2, imageUrl: panels.box2.imageUrl ? convertImagePath(panels.box2.imageUrl) : undefined } : panels.box2,
+      box3: panels.box3 ? { ...panels.box3, imageUrl: panels.box3.imageUrl ? convertImagePath(panels.box3.imageUrl) : undefined } : panels.box3,
+      box4: panels.box4 ? { ...panels.box4, imageUrl: panels.box4.imageUrl ? convertImagePath(panels.box4.imageUrl) : undefined } : panels.box4,
+      box5: panels.box5 ? { ...panels.box5, imageUrl: panels.box5.imageUrl ? convertImagePath(panels.box5.imageUrl) : undefined } : panels.box5,
+    };
+
     const response = {
       id: comic.id.toString(),
       title: comic.title,
@@ -82,8 +103,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
       category: comic.category,
       sourceType: comic.source_type,
       characterNames,
-      originalImage: comic.original_image,
-      panels,
+      originalImage: originalImageUrl,
+      panels: panelsWithFullUrls,
     };
 
     console.log('Comic fetched successfully:', { id: response.id, title: response.title });
@@ -267,15 +288,56 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     ) as any[];
 
     const comic = rows[0];
+    
+    // Parse JSON fields
+    let characterNames: string[] = [];
+    let panels: any = {};
+    
+    try {
+      characterNames = typeof comic.character_names === 'string' 
+        ? JSON.parse(comic.character_names) 
+        : comic.character_names;
+    } catch (e) {
+      characterNames = [];
+    }
+    
+    try {
+      panels = typeof comic.panels === 'string' 
+        ? JSON.parse(comic.panels) 
+        : comic.panels;
+    } catch (e) {
+      panels = {};
+    }
+
+    // Convert image paths to full URLs with backend domain
+    const convertImagePath = (path: string): string => {
+      if (!path || path.startsWith('http') || path.startsWith('data:image/')) {
+        return path;
+      }
+      return getImageUrl(path);
+    };
+
+    // Convert originalImage to full URL
+    const originalImageUrl = convertImagePath(comic.original_image);
+
+    // Convert panel imageUrls to full URLs
+    const panelsWithFullUrls = {
+      box1: panels.box1 ? { ...panels.box1, imageUrl: panels.box1.imageUrl ? convertImagePath(panels.box1.imageUrl) : undefined } : panels.box1,
+      box2: panels.box2 ? { ...panels.box2, imageUrl: panels.box2.imageUrl ? convertImagePath(panels.box2.imageUrl) : undefined } : panels.box2,
+      box3: panels.box3 ? { ...panels.box3, imageUrl: panels.box3.imageUrl ? convertImagePath(panels.box3.imageUrl) : undefined } : panels.box3,
+      box4: panels.box4 ? { ...panels.box4, imageUrl: panels.box4.imageUrl ? convertImagePath(panels.box4.imageUrl) : undefined } : panels.box4,
+      box5: panels.box5 ? { ...panels.box5, imageUrl: panels.box5.imageUrl ? convertImagePath(panels.box5.imageUrl) : undefined } : panels.box5,
+    };
+
     res.json({
       id: comic.id.toString(),
       title: comic.title,
       createdAt: new Date(comic.created_at).getTime(),
       category: comic.category,
       sourceType: comic.source_type,
-      characterNames: JSON.parse(comic.character_names),
-      originalImage: comic.original_image,
-      panels: JSON.parse(comic.panels),
+      characterNames,
+      originalImage: originalImageUrl,
+      panels: panelsWithFullUrls,
     });
   } catch (error: any) {
     console.error('Error updating comic:', error);

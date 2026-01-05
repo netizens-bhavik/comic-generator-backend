@@ -48,6 +48,14 @@ API_KEY=your_gemini_api_key_here
 # Frontend URL for CORS (allowed origin)
 # Update this to match your frontend URL
 FRONTEND_URL=http://localhost:3000
+
+# ============================================
+# Backend URL Configuration
+# ============================================
+# Backend URL for generating full image URLs
+# This should be the public URL of your backend (e.g., https://api.mycomic.online)
+# If not set, defaults to https://api.mycomic.online
+BACKEND_URL=https://api.mycomic.online
 `;
 
 const envPath = path.join(__dirname, '.env');

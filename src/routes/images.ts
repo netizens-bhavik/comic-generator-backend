@@ -1,6 +1,6 @@
 import express, { Response } from 'express';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
-import { uploadImage, deleteImage, isBase64Image } from '../services/imageUpload.js';
+import { uploadImage, deleteImage, isBase64Image, getImageUrl } from '../services/imageUpload.js';
 
 const router = express.Router();
 
@@ -28,8 +28,8 @@ router.post('/upload', async (req: AuthRequest, res: Response) => {
     // Upload image
     const imagePath = await uploadImage(imageBase64, fileName);
     
-    // Return path and full URL
-    const imageUrl = `/uploads/${imagePath}`;
+    // Return path and full URL with backend domain
+    const imageUrl = getImageUrl(imagePath);
 
     res.json({
       imagePath,
@@ -62,7 +62,7 @@ router.post('/upload-multiple', async (req: AuthRequest, res: Response) => {
       const imagePath = await uploadImage(img.imageBase64, img.fileName);
       return {
         imagePath,
-        imageUrl: `/uploads/${imagePath}`,
+        imageUrl: getImageUrl(imagePath),
       };
     });
 
