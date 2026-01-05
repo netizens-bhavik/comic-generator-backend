@@ -196,11 +196,11 @@ router.post('/generate', async (req: AuthRequest, res: Response) => {
 
     // Generate images for all panels in parallel
     const imagePromises = [
-      generatePanelImage(imageBase64, panels.box1.scene, characterNames, 1),
-      generatePanelImage(imageBase64, panels.box2.scene, characterNames, 2),
-      generatePanelImage(imageBase64, panels.box3.scene, characterNames, 3),
-      generatePanelImage(imageBase64, panels.box4.scene, characterNames, 4),
-      generatePanelImage(imageBase64, panels.box5.scene, characterNames, 5),
+      generatePanelImage(imageBase64, panels.box1.scene, characterNames, [], 1),
+      generatePanelImage(imageBase64, panels.box2.scene, characterNames, [], 2),
+      generatePanelImage(imageBase64, panels.box3.scene, characterNames, [], 3),
+      generatePanelImage(imageBase64, panels.box4.scene, characterNames, [], 4),
+      generatePanelImage(imageBase64, panels.box5.scene, characterNames, [], 5),
     ];
 
     const [img1, img2, img3, img4, img5] = await Promise.all(imagePromises);

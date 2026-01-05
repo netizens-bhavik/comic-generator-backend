@@ -1,4 +1,9 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
+import { 
+  buildImagePromptWithConsistency,
+  createCharacterDescription,
+  CharacterDescription
+} from "./characterConsistency";
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
@@ -41,9 +46,10 @@ export const generateComicScript = async (
 CRITICAL CHARACTER CONSISTENCY REQUIREMENTS:
 - Characters MUST maintain the exact same appearance across ALL panels
 - Once a character is introduced, their physical features, clothing, hair color, facial features, body type, and accessories MUST remain identical in every subsequent panel
-- The main character (${mainChar}) should look like the person in the uploaded photo in ALL panels
+- The main character (${mainChar}) should look like the person in the uploaded photo in ALL panels (but will be rendered in comic book/cartoon style)
 - Include specific visual details in scene descriptions to ensure consistency (e.g., "wearing the same blue shirt", "same hairstyle", "same facial features")
 - The character's look should NEVER change between panels - no different clothing, hairstyles, or physical features
+- All images will be generated in classic American comic book illustration style (cartoon/comic style, not realistic)
 `;
 
   const prompt = `
@@ -70,21 +76,24 @@ CRITICAL CHARACTER CONSISTENCY REQUIREMENTS:
     
     Output Constraints:
     - Title: A catchy, simple name for this story.
-    - Box 1: Scene Description (visuals) & Narration (simple text). Include specific character appearance details. Opening scene.
-    - Box 2: Scene Description (visuals) & Narration (simple text). Ensure characters look identical to Box 1. Rising action.
-    - Box 3: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. Development.
-    - Box 4: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. Climax/turning point.
-    - Box 5: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. CONCLUSION - must wrap up the story with a satisfying ending.
+    - Box 1: Scene Description (visuals) & Narration (simple text). Include specific character appearance details. Opening scene. Describe scenes as they would appear in a comic book (cartoon style, not realistic).
+    - Box 2: Scene Description (visuals) & Narration (simple text). Ensure characters look identical to Box 1. Rising action. Describe in comic book style.
+    - Box 3: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. Development. Describe in comic book style.
+    - Box 4: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. Climax/turning point. Describe in comic book style.
+    - Box 5: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. CONCLUSION - must wrap up the story with a satisfying ending. Describe in comic book style.
     - Tone: Fun, exciting, and safe.
     - Safety: No violent, scary, or harmful content.
+    - Style Note: All scene descriptions should be written with comic book illustration style in mind (cartoon, vibrant colors, bold outlines).
   `;
 
+  // Using Gemini 2.5 Flash for text logic
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: [
       {
         role: 'user',
         parts: [
+          // We pass the image to the text model so it "sees" the character for context if needed
           {
             inlineData: {
               mimeType: 'image/jpeg',
@@ -168,10 +177,18 @@ export const generatePanelImage = async (
   originalImageBase64: string,
   sceneDescription: string,
   characterNames: string[] = [],
-  panelIndex?: number
+  characterDescriptions: CharacterDescription[] = [],
+  panelIndex?: number // 1-5 to indicate which panel this is
 ): Promise<string> => {
   const ai = getAiClient();
 
+  // Use character descriptions if provided, otherwise create them from names
+  const finalCharacterDescriptions = characterDescriptions.length > 0
+    ? characterDescriptions
+    : characterNames.map(name => createCharacterDescription(name, originalImageBase64));
+
+  // Determine aspect ratio based on panel position
+  // Panels 1-4 are side-by-side (roughly square/landscape), Panel 5 is full width (wider landscape)
   const aspectRatio = panelIndex === 5 
     ? "16:9 landscape format (wider than tall)" 
     : "4:3 or square format (slightly wider than tall)";
@@ -180,23 +197,23 @@ export const generatePanelImage = async (
     ? "full-width panel at the bottom of the page"
     : "side-by-side panel in the top or middle row";
 
-  const mainChar = characterNames[0] || "The Hero";
-  const prompt = `${sceneDescription}
+  // Build enhanced prompt using character consistency utilities
+  const basePrompt = buildImagePromptWithConsistency(
+    sceneDescription,
+    characterNames,
+    finalCharacterDescriptions,
+    "the provided reference image"
+  );
 
-CRITICAL CHARACTER CONSISTENCY:
-- The main character (${mainChar}) MUST look like the person in the provided reference image
-- Maintain exact same appearance, clothing, hairstyle, and physical features as shown in the reference
-- Character appearance must be consistent across all panels
+  // Add aspect ratio and layout information with STRICT comic book style enforcement
+  const prompt = `${basePrompt}
 
-CRITICAL STYLE REQUIREMENTS - MUST BE STRICTLY ENFORCED:
-- Generate this image EXCLUSIVELY in classic American comic book style
-- Use bold, black ink outlines and borders around all characters and objects
-- Apply vibrant, saturated colors typical of comic books (no realistic/photographic style)
-- Include halftone dots or crosshatching patterns for shading (comic book style shading)
-- Use strong contrast between foreground and background
-- Style should resemble Marvel, DC, or classic comic book illustrations
-- NO realistic photography style, NO watercolor, NO soft pastel styles
-- MUST look like a traditional printed comic book panel
+REMINDER - STYLE IS CRITICAL:
+- This MUST be a classic American comic book illustration - cartoon style, NOT realistic
+- The reference image is ONLY for character appearance - transform it into comic book style
+- Use bold black outlines, flat vibrant colors, halftone shading
+- NO photographic realism - this is a children's comic book panel
+- Characters should be cartoon versions, not photorealistic copies
 
 IMPORTANT LAYOUT REQUIREMENTS:
 - This image will be displayed in a ${panelLayout}
@@ -239,9 +256,10 @@ IMPORTANT LAYOUT REQUIREMENTS:
     }
     
     console.warn("No image data returned for panel, using original.");
-    return originalImageBase64;
+    return originalImageBase64; // Fallback
   } catch (error) {
     console.error("Error generating panel image, falling back to original:", error);
+    // Return the original image if generation fails to prevent app crash/hang
     return originalImageBase64; 
   }
 };
@@ -253,6 +271,7 @@ export const editImageWithGemini = async (
   const ai = getAiClient();
 
   try {
+    // Clean base64 string
     const base64Data = imageBase64.split(',')[1];
 
     const response = await ai.models.generateContent({
@@ -262,7 +281,7 @@ export const editImageWithGemini = async (
           {
             inlineData: {
               data: base64Data,
-              mimeType: 'image/jpeg',
+              mimeType: 'image/jpeg', // Assuming JPEG for simplicity from canvas/input
             },
           },
           {
@@ -275,16 +294,18 @@ export const editImageWithGemini = async (
       },
     });
 
+    // Parse the response to find the image
     const parts = response.candidates?.[0]?.content?.parts;
     if (parts && parts.length > 0) {
-      for (const part of parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return `data:image/png;base64,${part.inlineData.data}`;
+        for (const part of parts) {
+            if (part.inlineData && part.inlineData.data) {
+                return `data:image/png;base64,${part.inlineData.data}`;
+            }
         }
-      }
     }
     
     throw new Error("No image data returned from Gemini.");
+
   } catch (error) {
     console.error("Error editing image:", error);
     throw error;
