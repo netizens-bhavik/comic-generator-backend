@@ -43,14 +43,49 @@ export const generateComicScript = async (
   const charsDescription = `${mainChar}${secondChar}`;
 
   const consistencyInstructions = `
-CRITICAL CHARACTER CONSISTENCY REQUIREMENTS:
-- Characters MUST maintain the exact same appearance across ALL panels
-- Once a character is introduced, their physical features, clothing, hair color, facial features, body type, and accessories MUST remain identical in every subsequent panel
-- The main character (${mainChar}) should look like the person in the uploaded photo in ALL panels (but will be rendered in comic book/cartoon style)
-- Include specific visual details in scene descriptions to ensure consistency (e.g., "wearing the same blue shirt", "same hairstyle", "same facial features")
-- The character's look should NEVER change between panels - no different clothing, hairstyles, or physical features
-- All images will be generated in classic American comic book illustration style (cartoon/comic style, not realistic)
-`;
+  CRITICAL CHARACTER CONSISTENCY REQUIREMENTS (STRICT — MUST BE FOLLOWED):
+  
+  IDENTITY LOCK (NO VARIATION ALLOWED):
+  - Once a character appears, their appearance is LOCKED for the entire comic.
+  - Facial structure, face shape, skin tone, eye shape, nose, mouth, body type, height, and proportions MUST remain EXACTLY the same in ALL panels.
+  - Clothing, colors, hairstyle, accessories, and footwear MUST be IDENTICAL in every panel.
+  - NO changes, upgrades, damage, aging, or stylistic variation are allowed between panels.
+  
+  REFERENCE IMAGE USAGE (IDENTITY ONLY):
+  - The main character (${mainChar}) MUST be based on the uploaded photo ONLY to extract identity (face and body shape).
+  - The uploaded image MUST NEVER be rendered as a real photo or realistic drawing.
+  - DO NOT copy photographic lighting, shadows, skin texture, pores, wrinkles, fabric texture, or realism from the image.
+  - The character MUST ALWAYS be transformed into a CARTOON COMIC-BOOK VERSION.
+  
+  STRICT COMIC BOOK STYLE — NO EXCEPTIONS:
+  - ALL images MUST be classic American comic book illustrations.
+  - 2D hand-drawn cartoon style ONLY.
+  - Thick black ink outlines around characters and objects.
+  - Flat, solid colors with simple cel shading (no gradients).
+  - Halftone dots for shadows and backgrounds.
+  - Bold, vibrant colors suitable for children’s comic books.
+  
+  ABSOLUTELY FORBIDDEN (NEVER ALLOWED):
+  - Real photos or photo-like images
+  - Photorealistic or semi-realistic rendering
+  - AI-art realism
+  - Digital painting or painterly styles
+  - 3D rendering, Pixar/Disney/DreamWorks styles
+  - Anime, manga, or cinematic styles
+  - Soft lighting, realistic shadows, depth-of-field, or blur
+  
+  STYLE IMMUTABILITY:
+  - The comic style MUST NOT change, evolve, or drift between panels.
+  - Every panel must look like it was drawn by the SAME comic artist on the SAME printed page.
+  
+  DESCRIPTION ENFORCEMENT:
+  - Every scene description MUST restate key visual traits
+    (example: “same red hoodie, same short black hair, same round face, same sneakers”).
+  
+  FINAL RULE:
+  - If an image looks like a real photo or realistic illustration, it is WRONG and MUST be corrected into comic book style.
+  `;
+  
 
   const prompt = `
     You are the engine of a comic-story creation app for kids.
