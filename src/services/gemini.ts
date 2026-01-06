@@ -97,24 +97,24 @@ export const generateCharacterVariations = async (
 
   // We will generate 4 variations in parallel
   const prompt = `
-  Generate a high-quality portrait of a ${gender} in a CLASSIC AMERICAN COMIC BOOK style.
+  Generate a high-quality portrait of a ${gender} in professional comic book/manga illustration style.
 
-  CRITICAL INSTRUCTION: EXACT CARTOON FACE REPLICA
-  - The face in the output image MUST BE AN EXACT CARTOON REPLICA of the face in the input image.
-  - TRANSFORM the facial features into a simplified, iconic CARTOON representation while maintaining recognition.
-  - Keep the exact eye shape, nose shape, mouth shape, jawline, and ear shape, but RENDERED WITH SIMPLIFIED, THICK LINES AND FLAT SHAPES.
-  - Keep the exact hair style and hair color, but RENDERED AS A CARTOON.
-  - ONLY change the art style to "CLASSIC AMERICAN COMIC BOOK" (bold lines, COMPLETELY FLAT colors, simple cel shading), do NOT change the facial structure into realism.
-  - The background should be a simple solid, flat color or a very simple, flat gradient.
+  CRITICAL INSTRUCTION: EXACT COMIC BOOK CHARACTER REPLICA
+  - The face in the output image MUST closely resemble the face in the input image, rendered in comic book/manga style.
+  - TRANSFORM the facial features into a professional comic book/manga representation while maintaining recognition.
+  - Keep the exact eye shape, nose shape, mouth shape, jawline, and ear shape, but RENDERED WITH BOLD LINES AND VIBRANT COLORS.
+  - Keep the exact hair style and hair color, but RENDERED IN COMIC BOOK STYLE.
+  - Transform the art style to professional comic book/manga illustration (bold lines, vibrant colors, proper cel shading), do NOT use photorealistic rendering.
+  - The background should be a solid color or simple gradient suitable for comic book art.
   - Close-up shot (head and shoulders, or chest up).
   
   STYLE REQUIREMENTS (NON-NEGOTIABLE):
-  - CLASSIC AMERICAN COMIC BOOK illustration style, HIGHLY CARTOONIZED.
-  - EXTREMELY THICK black ink outlines around ALL features, hair, and edges.
-  - COMPLETELY FLAT, VIBRANT, SOLID COLORS (ABSOLUTELY NO gradients, NO soft shading, NO color blending).
-  - VERY SIMPLE cel shading ONLY (1–2 harsh shadow tones max, applied as solid blocks of color).
-  - Hand-drawn, graphic, bold cartoon appearance.
-  - STRICTLY 2D illustration ONLY.
+  - Professional comic book/manga illustration style.
+  - Bold, defined black ink outlines around features, hair, and edges.
+  - Vibrant, solid colors with proper cel shading for depth.
+  - Professional cel shading with proper shadow tones for dimension.
+  - Hand-drawn, graphic, bold comic book appearance.
+  - 2D illustration style.
   
   STRICTLY FORBIDDEN (DO NOT USE):
   - Photorealism, realistic rendering, hyperrealism, semi-realism, fine art.
@@ -122,8 +122,7 @@ export const generateCharacterVariations = async (
   - Digital painting style, soft brush strokes, painterly effects.
   - Subtle lighting, realistic shadows, atmospheric effects, depth-of-field.
   - Skin texture, hair texture, pores, wrinkles, or any form of realistic detail.
-  - Anime, Manga, Pixar, Disney, DreamWorks style (THESE ARE TOO DETAILED).
-  - Any AI-art polish or smooth rendering.
+  - Any AI-art polish or smooth rendering that looks too realistic.
 `;
 
   const generateOne = async (): Promise<string | null> => {
@@ -197,53 +196,53 @@ export const generateComicScript = async (
   CRITICAL CHARACTER, STYLE, AND ILLUSTRATION REQUIREMENTS
   (ABSOLUTE — NO EXCEPTIONS — MUST BE FOLLOWED):
   
-  PURE CARTOON ILLUSTRATION MODE:
-  - ALL images MUST be fully illustrated, artistic, and EXTREMELY CARTOON-LIKE.
-  - The output MUST look SIMPLISTICALLY HAND-DRAWN with intentional simplicity.
-  - The image MUST resemble VINTAGE PRINTED CHILDREN'S COMIC BOOK ART.
-  - EXTREMELY THICK, VISIBLE LINE ART MUST DOMINATE THE IMAGE.
+  COMIC BOOK ILLUSTRATION MODE:
+  - ALL images MUST be fully illustrated in professional comic book/manga illustration style.
+  - The output MUST look like hand-drawn comic book art with bold, defined lines.
+  - The image MUST resemble professional comic book/manga panel illustrations.
+  - BOLD, VISIBLE LINE ART MUST DOMINATE THE IMAGE.
   
   ILLUSTRATOR STYLE LOCK:
-  - All panels MUST appear drawn by ONE single human comic illustrator, with a VERY SIMPLISTIC, BOLD STYLE.
+  - All panels MUST appear drawn by ONE single comic illustrator, with a consistent, bold style.
   - The illustrator style is LOCKED from Panel 1 and MUST remain consistent throughout.
-  - Line thickness, inking pressure, facial simplification (to cartoon level), and proportions MUST remain consistent.
-  - Maintain the same simplified style level across all panels.
+  - Line thickness, inking pressure, character proportions, and visual style MUST remain consistent.
+  - Maintain the same illustration style level across all panels.
   
-  STRICT CARTOON COMIC STYLE:
-  - Use STRICTLY 2D cartoon illustration.
-  - Apply EXTREMELY THICK, uneven black ink outlines (clearly visible and defining all shapes).
-  - Use HEAVILY SIMPLIFIED facial features with bold cartoon proportions.
-  - Apply COMPLETELY FLAT, POSTER-LIKE COLORS using solid color blocks.
-  - Use VERY SIMPLE cel shading (optional, 1 solid shadow tone maximum, applied as graphic blocks).
-  - Apply halftone dots or solid, flat fills for shadows.
-  - Use significant exaggeration of heads, eyes, and expressions (child-friendly, like classic comics).
+  COMIC BOOK/MANGA ILLUSTRATION STYLE:
+  - Use professional comic book/manga illustration style.
+  - Apply BOLD, defined black ink outlines (clearly visible and defining all shapes).
+  - Use well-defined facial features with proper comic book proportions.
+  - Apply vibrant colors using solid color blocks with professional shading.
+  - Use cel shading with proper shadow tones for depth and dimension.
+  - Apply halftone dots or solid fills for shadows and effects.
+  - Use expressive character designs suitable for comic book storytelling.
   
-  REFERENCE IMAGE USAGE (IDENTITY EXTRACTION FOR CARTOON TRANSFORMATION):
-  - Use the uploaded photo to identify the basic face shape and body type for a CARTOON TRANSFORMATION.
+  REFERENCE IMAGE USAGE (IDENTITY EXTRACTION FOR COMIC TRANSFORMATION):
+  - Use the uploaded photo to identify the basic face shape and body type for comic book transformation.
   - Extract facial features, hair style, and clothing from the reference image.
-  - Convert the character into a SIMPLIFIED, BOLD, GRAPHIC CARTOON COMIC CHARACTER.
-  - Render the character as a drawing with simplified lines and flat colors.
+  - Convert the character into a professional comic book/manga character.
+  - Render the character in proper comic book illustration style with bold lines and vibrant colors.
   
   CHARACTER IDENTITY LOCK:
-  - Once introduced, the character's CARTOON appearance is LOCKED.
-  - Use the same simplified cartoon face shape, same cartoon features, same cartoon clothes, same flat colors, same cartoon hairstyle in ALL panels.
+  - Once introduced, the character's appearance is LOCKED.
+  - Use the same face shape, features, clothes, colors, and hairstyle in ALL panels.
   - Maintain consistent character appearance without costume changes, damage, aging, or visual variation.
   
   DESCRIPTION ENFORCEMENT:
-  - Every scene description MUST repeat key cartoon traits and visual style
-    (example: "a cartoon girl with big round cartoon eyes, wearing a simple red hoodie with flat colors, drawn with thick black outlines").
+  - Every scene description MUST repeat key character traits and visual style
+    (example: "a character with distinctive features, wearing specific clothing, rendered in comic book style with bold outlines").
   
   FINAL VALIDATION RULE:
-  - The image must clearly look like a BOLD, SIMPLIFIED CARTOON DRAWING at first glance.
-  - Ensure the style is consistent with vintage children's comic book art.
+  - The image must clearly look like a professional comic book/manga illustration.
+  - Ensure the style is consistent with quality comic book and manga art.
   `;
   
 
   const prompt = `
-    You are the engine of a comic-story creation app for kids.
+    You are the engine of a comic-story creation app.
     Your task is to generate a complete 5-panel comic story that fits on a single page.
     
-    IMPORTANT: Use very simple, basic English suitable for young children (ages 5-8).
+    IMPORTANT: Use clear, engaging English suitable for teenagers and general audiences.
     
     Inputs:
     1. Characters: ${charsDescription}.
@@ -262,17 +261,17 @@ export const generateComicScript = async (
     CRITICAL: The story MUST conclude and feel complete in Box 5. Box 5 should provide a clear ending, resolution, or satisfying conclusion to the adventure.
     
     Output Constraints:
-    - Title: A catchy, simple name for this story.
+    - Title: A catchy, engaging name for this story.
     - Visual Signature: Define a specific outfit for the main character (e.g., "red cape and blue shirt") and INCLUDE it in every 'scene' description.
-    - Box 1: Scene Description (visuals) & Narration (simple text). Include specific character appearance details. Opening scene. Describe scenes as they would appear in a comic book (cartoon style, not realistic).
-    - Box 2: Scene Description (visuals) & Narration (simple text). Ensure characters look identical to Box 1. Rising action. Describe in comic book style.
-    - Box 3: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. Development. Describe in comic book style.
-    - Box 4: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. Climax/turning point. Describe in comic book style.
-    - Box 5: Scene Description (visuals) & Narration (simple text). Maintain exact same character appearances. CONCLUSION - must wrap up the story with a satisfying ending. Describe in comic book style.
-    - Tone: Fun, exciting, and safe.
-    - Safety: No violent, scary, or harmful content.
-    - Style Note: All scene descriptions should be written with comic book illustration style in mind (cartoon, vibrant colors, bold outlines).
-    - Character Context: The main character looks like the person in the uploaded photo, but rendered in comic book/cartoon style.
+    - Box 1: Scene Description (visuals) & Narration (engaging text). Include specific character appearance details. Opening scene. Describe scenes as they would appear in a comic book/manga illustration.
+    - Box 2: Scene Description (visuals) & Narration (engaging text). Ensure characters look identical to Box 1. Rising action. Describe in comic book/manga style.
+    - Box 3: Scene Description (visuals) & Narration (engaging text). Maintain exact same character appearances. Development. Describe in comic book/manga style.
+    - Box 4: Scene Description (visuals) & Narration (engaging text). Maintain exact same character appearances. Climax/turning point. Describe in comic book/manga style.
+    - Box 5: Scene Description (visuals) & Narration (engaging text). Maintain exact same character appearances. CONCLUSION - must wrap up the story with a satisfying ending. Describe in comic book/manga style.
+    - Tone: Engaging, exciting, and appropriate for all ages.
+    - Safety: No excessive violence, inappropriate, or harmful content.
+    - Style Note: All scene descriptions should be written with comic book/manga illustration style in mind (bold lines, vibrant colors, professional illustration quality).
+    - Character Context: The main character looks like the person in the uploaded photo, but rendered in proper comic book/manga illustration style.
   `;
 
   // Using Gemini 2.5 Flash for text logic
@@ -403,45 +402,45 @@ DETAILED STYLE REQUIREMENTS
 ==============================
 
 IMAGE TYPE:
-This image MUST be a CLASSIC AMERICAN COMIC BOOK PANEL designed for children's comics (ages 5-8).
-The aesthetic must be EXTREMELY CARTOONISH and SIMPLIFIED with intentional low-fidelity appearance.
+This image MUST be a professional comic book/manga panel illustration suitable for all ages.
+The aesthetic must be high-quality comic book/manga illustration style with professional appearance.
 
 CHARACTER IDENTITY PRESERVATION:
-- Transform the main character from the reference image into a SIMPLIFIED CARTOON AVATAR
+- Transform the main character from the reference image into a comic book/manga character
 - Maintain the same facial features: eye shape, nose shape, mouth shape, jawline, and ear shape
 - Preserve hair color, hair style, and skin tone from the reference image
 - Keep the same body proportions and basic body shape
-- Render all features with SIMPLIFIED LINES AND FLAT SHAPES
-- Apply the same simplified CARTOON appearance consistently across all panels
-- Use the same CARTOON clothes, flat colors, and CARTOON hairstyle in every panel
-- Ensure the character is instantly recognizable as the cartoonized version of the reference person
+- Render all features with bold lines and vibrant colors in comic book style
+- Apply the same comic book/manga appearance consistently across all panels
+- Use the same clothes, colors, and hairstyle in every panel
+- Ensure the character is instantly recognizable as the comic book version of the reference person
 
 ART STYLE REQUIREMENTS:
-- Hand-drawn comic book illustration style with HIGHLY CARTOONIZED appearance
-- EXTREMELY THICK black ink outlines around ALL characters, objects, and elements
-- COMPLETELY FLAT, SOLID COLORS using vibrant, saturated primary colors
-- Use solid color blocks with NO gradients, NO soft shading, NO color blending
-- Apply MINIMAL cel shading using 1-2 harsh shadow tones as solid blocks of color
+- Professional comic book/manga illustration style
+- Bold, defined black ink outlines around characters, objects, and elements
+- Vibrant colors with proper shading and depth
+- Use solid color blocks with professional cel shading
+- Apply proper shadow tones for depth and dimension
 - Use halftone dot texture for shadows and backgrounds when applicable
-- Apply bold, high-contrast PRIMARY color palette
-- Use clearly exaggerated cartoon proportions and expressions
-- Render as strictly 2D illustration with graphic, simplified shapes
-- Maintain intentional simplicity with minimal detail and clear graphic forms
+- Apply bold, high-contrast color palette suitable for comic book art
+- Use expressive character proportions and expressions
+- Render as 2D illustration with clear, defined forms
+- Maintain professional illustration quality with proper detail and composition
 
 REFERENCE STYLE INSPIRATION:
-- Classic Marvel / DC comic books from Silver-Bronze Age (simplified examples)
-- Saturday morning superhero comics for young children
-- Vintage children's comic books from printed pages with simple, graphic art
-- Hanna-Barbera animation style
-- Archie Comics illustration style
-- Very early superhero comic designs
+- Classic Marvel / DC comic books from Silver-Bronze Age
+- Modern comic book illustration styles
+- Professional manga illustration styles
+- Quality graphic novel art
+- Contemporary comic book art styles
+- Professional superhero comic designs
 
 CHARACTER TRANSFORMATION PROCESS:
-- Use the uploaded photo ONLY to establish the core CARTOON IDENTITY and basic body shape
+- Use the uploaded photo to establish the core character identity and basic body shape
 - Extract facial features, hair style, and clothing from the reference image
-- Transform these elements into BOLD, GRAPHIC, CARTOON COMIC VERSION
-- Render with simplified lines, flat colors, and cartoon proportions
-- Ensure the character looks like a drawing, not a photograph
+- Transform these elements into professional comic book/manga character design
+- Render with bold lines, vibrant colors, and proper comic book proportions
+- Ensure the character looks like a professional comic book illustration, not a photograph
 
 LAYOUT & COMPOSITION REQUIREMENTS:
 - Panel Layout: ${panelLayout}
@@ -452,12 +451,12 @@ LAYOUT & COMPOSITION REQUIREMENTS:
 - Maintain proper composition with balanced elements
 
 TECHNICAL REQUIREMENTS:
-- High quality, colorful, professional comic book illustration
-- Clear character designs with well-defined cartoon features
+- High quality, colorful, professional comic book/manga illustration
+- Clear character designs with well-defined features
 - Proper composition that fits the panel format
 - Maintain proper proportions without distortion or stretching
 - Balanced framing with important elements centered
-- Vibrant, kid-friendly color palette
+- Vibrant, engaging color palette suitable for all ages
 - Consistent visual style throughout the panel
 - Output as a clean, printable comic book panel image
 
