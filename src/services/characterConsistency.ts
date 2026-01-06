@@ -154,27 +154,18 @@ export function buildImagePromptWithConsistency(
     : "";
 
   return `
-CRITICAL: You MUST create this image EXCLUSIVELY in classic American comic book illustration style. This is a children's comic book panel - it MUST look like a cartoon/comic drawing, NOT a photograph.
+CRITICAL: Create this image EXCLUSIVELY in classic American comic book illustration style. This is a children's comic book panel designed for ages 5-8.
 
-STYLE REQUIREMENTS (MANDATORY - NO EXCEPTIONS):
+STYLE REQUIREMENTS (MANDATORY):
 - STYLE: Classic American comic book illustration (like Marvel, DC Comics, or Sunday newspaper comics)
 - ART STYLE: Hand-drawn cartoon illustration with bold black ink outlines
-- COLOR STYLE: Flat, vibrant, saturated colors with no realistic shading or gradients
-- SHADING: Use halftone dots, crosshatching, or solid color blocks - NO realistic shadows
+- COLOR STYLE: Flat, vibrant, saturated colors using solid color blocks
+- SHADING TECHNIQUE: Use halftone dots, crosshatching, or solid color blocks for shadows
 - OUTLINES: Thick black ink outlines around ALL characters, objects, and elements
-- APPEARANCE: Must look like a printed comic book page - NOT a photograph, NOT realistic art
+- APPEARANCE: Printed comic book page aesthetic with intentional simplicity
 - KID-FRIENDLY: Bright, cheerful, cartoon-like appearance suitable for children ages 5-8
-
-ABSOLUTELY FORBIDDEN STYLES (DO NOT USE):
-- NO realistic photography style
-- NO photorealistic rendering
-- NO 3D rendered appearance
-- NO watercolor or painting styles
-- NO soft pastel or artistic styles
-- NO digital art with realistic textures
-- NO natural lighting or shadows
-- NO skin texture or realistic details
-- The reference image is ONLY for character appearance - DO NOT copy its photographic style
+- RENDERING: 2D illustration with graphic, simplified shapes
+- DETAIL LEVEL: Minimal detail with clear graphic shapes and bold forms
 
 Scene: ${enhancedScene}
 
@@ -186,10 +177,11 @@ Additional Requirements:
 - High quality, colorful, professional comic book illustration
 - Clear character designs with well-defined cartoon features
 - Proper composition that fits the panel format
-- No distortion or stretching of characters or objects
+- Maintain proper proportions without distortion or stretching
 - Balanced framing with important elements centered
-- Vibrant, kid-friendly colors
-- Characters should look like cartoon versions of the reference image, not photographic copies
+- Vibrant, kid-friendly color palette
+- Characters rendered as cartoon versions of the reference image
+- Consistent visual style throughout the panel
 `.trim();
 }
 

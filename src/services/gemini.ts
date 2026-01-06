@@ -197,55 +197,45 @@ export const generateComicScript = async (
   CRITICAL CHARACTER, STYLE, AND ILLUSTRATION REQUIREMENTS
   (ABSOLUTE — NO EXCEPTIONS — MUST BE FOLLOWED):
   
-  PURE CARTOON ILLUSTRATION MODE (NO REALISM WHATSOEVER):
+  PURE CARTOON ILLUSTRATION MODE:
   - ALL images MUST be fully illustrated, artistic, and EXTREMELY CARTOON-LIKE.
-  - The output MUST look SIMPLISTICALLY HAND-DRAWN, not rendered, not painted, and ABSOLUTELY NOT realistic.
-  - The image MUST resemble VINTAGE PRINTED CHILDREN'S COMIC BOOK ART, NOT modern digital illustration.
+  - The output MUST look SIMPLISTICALLY HAND-DRAWN with intentional simplicity.
+  - The image MUST resemble VINTAGE PRINTED CHILDREN'S COMIC BOOK ART.
   - EXTREMELY THICK, VISIBLE LINE ART MUST DOMINATE THE IMAGE.
   
   ILLUSTRATOR STYLE LOCK:
   - All panels MUST appear drawn by ONE single human comic illustrator, with a VERY SIMPLISTIC, BOLD STYLE.
-  - The illustrator style is LOCKED from Panel 1 and MUST NOT change.
+  - The illustrator style is LOCKED from Panel 1 and MUST remain consistent throughout.
   - Line thickness, inking pressure, facial simplification (to cartoon level), and proportions MUST remain consistent.
-  - No refinement, smoothing, or realism improvements are allowed in later panels.
+  - Maintain the same simplified style level across all panels.
   
   STRICT CARTOON COMIC STYLE:
-  - STRICTLY 2D cartoon illustration ONLY.
-  - EXTREMELY THICK, uneven black ink outlines (clearly visible and defining all shapes).
-  - HEAVILY SIMPLIFIED facial features (bold cartoon proportions, NO anatomical accuracy).
-  - COMPLETELY FLAT, POSTER-LIKE COLORS (NO gradients, NO blending, NO subtle color variations).
-  - VERY SIMPLE cel shading (optional, 1 solid shadow tone maximum, applied as graphic blocks).
-  - Halftone dots or solid, flat fills for shadows.
-  - Significant exaggeration of heads, eyes, and expressions (child-friendly, like classic comics).
+  - Use STRICTLY 2D cartoon illustration.
+  - Apply EXTREMELY THICK, uneven black ink outlines (clearly visible and defining all shapes).
+  - Use HEAVILY SIMPLIFIED facial features with bold cartoon proportions.
+  - Apply COMPLETELY FLAT, POSTER-LIKE COLORS using solid color blocks.
+  - Use VERY SIMPLE cel shading (optional, 1 solid shadow tone maximum, applied as graphic blocks).
+  - Apply halftone dots or solid, flat fills for shadows.
+  - Use significant exaggeration of heads, eyes, and expressions (child-friendly, like classic comics).
   
-  ABSOLUTELY FORBIDDEN (ZERO TOLERANCE):
-  - Real photos or photo-based rendering, NO PHOTOMANIPULATION.
-  - Realistic or semi-realistic illustration, detailed illustration.
-  - Painterly art, concept art, or AI-art polish, no sophisticated rendering.
-  - Digital painting or smooth brush strokes, no airbrushing.
-  - 3D, CGI, or rendered looks.
-  - Pixar / Disney / DreamWorks, Anime / manga (THESE STYLES ARE TOO DETAILED AND REALISTIC).
-  - Cinematic lighting, realistic shadows, blur, or depth-of-field.
-  - Skin texture, fabric texture, pores, wrinkles, individual hair strands, or any form of lighting realism.
-  
-  REFERENCE IMAGE USAGE (IDENTITY EXTRACTION ONLY FOR CARTOON TRANSFORMATION):
-  - The uploaded photo is ONLY to identify the basic face shape and body type for a CARTOON TRANSFORMATION.
-  - DO NOT copy lighting, texture, or realism from the photo AT ALL.
+  REFERENCE IMAGE USAGE (IDENTITY EXTRACTION FOR CARTOON TRANSFORMATION):
+  - Use the uploaded photo to identify the basic face shape and body type for a CARTOON TRANSFORMATION.
+  - Extract facial features, hair style, and clothing from the reference image.
   - Convert the character into a SIMPLIFIED, BOLD, GRAPHIC CARTOON COMIC CHARACTER.
-  - The result must NEVER look like a real person, it must always look like a DRAWING.
+  - Render the character as a drawing with simplified lines and flat colors.
   
   CHARACTER IDENTITY LOCK:
   - Once introduced, the character's CARTOON appearance is LOCKED.
-  - Same simplified cartoon face shape, same cartoon features, same cartoon clothes, same flat colors, same cartoon hairstyle in ALL panels.
-  - No costume changes, damage, aging, or visual variation.
+  - Use the same simplified cartoon face shape, same cartoon features, same cartoon clothes, same flat colors, same cartoon hairstyle in ALL panels.
+  - Maintain consistent character appearance without costume changes, damage, aging, or visual variation.
   
   DESCRIPTION ENFORCEMENT:
   - Every scene description MUST repeat key cartoon traits and visual style
     (example: "a cartoon girl with big round cartoon eyes, wearing a simple red hoodie with flat colors, drawn with thick black outlines").
   
   FINAL VALIDATION RULE:
-  - If the image looks like it could be mistaken for a real person or realistic illustration in ANY WAY, it is WRONG.
   - The image must clearly look like a BOLD, SIMPLIFIED CARTOON DRAWING at first glance.
+  - Ensure the style is consistent with vintage children's comic book art.
   `;
   
 
@@ -396,20 +386,6 @@ export const generatePanelImage = async (
     ? "full-width panel at the bottom of the page"
     : "side-by-side panel in the top or middle row";
 
-  // Negative style guard to prevent unwanted styles
-  const negativeStyleGuard = `
-NEGATIVE PROMPT:
-photo, photograph, photorealistic, realistic, ultra-detailed, hyperrealistic,
-cinematic lighting, soft lighting, studio lighting, natural lighting,
-3d render, blender, unreal engine,
-digital painting, concept art, fine art, detailed brushstrokes,
-anime, manga, chibi,
-pixar, disney, dreamworks,
-ai generated, midjourney style,
-smooth shading, gradients, realism, complex textures, subtle highlights, skin pores, individual hair strands,
-anatomically precise rendering, painterly style, airbrushed look
-`;
-
   // Build enhanced prompt using character consistency utilities
   const consistencyPrompt = buildImagePromptWithConsistency(
     sceneDescription,
@@ -418,97 +394,75 @@ anatomically precise rendering, painterly style, airbrushed look
     "the provided reference image"
   );
 
-  const styleOverride = `
-  STYLE OVERRIDE — READ FIRST:
-  
-  This is NOT a photo.
-  This is NOT a realistic illustration.
-  This is NOT digital painting or fine art.
-  
-  This image MUST be a LOW-FIDELITY, SIMPLISTIC, HAND-DRAWN CARTOON COMIC.
-  Intentionally simple. Intentionally exaggerated.
-  Looks like it was drawn with basic ink pens and solid color markers on paper.
-  Think minimal detail, clear graphic shapes.
-  `;
-
-  // Combine negative guard with consistency prompt
-  const basePrompt = `
-  ${styleOverride}
-  ${negativeStyleGuard}
-  ${consistencyPrompt}
-  `;
-
-  // Final prompt with absolute style contract
+  // Final prompt with detailed positive requirements
   const prompt = `
-${basePrompt}
+${consistencyPrompt}
 
 ==============================
-ABSOLUTE STYLE CONTRACT (MUST FOLLOW)
+DETAILED STYLE REQUIREMENTS
 ==============================
 
-This image MUST look like a CLASSIC AMERICAN COMIC BOOK PANEL,
-specifically a CHILDRENS' COMIC, with an EXTREMELY CARTOONISH and SIMPLIFIED aesthetic.
+IMAGE TYPE:
+This image MUST be a CLASSIC AMERICAN COMIC BOOK PANEL designed for children's comics (ages 5-8).
+The aesthetic must be EXTREMELY CARTOONISH and SIMPLIFIED with intentional low-fidelity appearance.
 
-CRITICAL INSTRUCTION: IDENTITY PRESERVATION (CARTOON AVATAR)
-- The main character in this scene MUST LOOK EXACTLY like the person in the provided reference image,
-  BUT AS A SIMPLIFIED, CARTOON AVATAR.
-- Maintain the same facial features, hair color/style, and skin tone,
-  but TRANSFORM them into a stylized, graphic comic representation.
-- Keep the exact eye shape, nose shape, mouth shape, jawline, and ear shape,
-  but RENDERED WITH SIMPLIFIED LINES AND FLAT SHAPES.
-- Do not change the face structure - only convert it into a BOLD, CARTOON comic style.
-- Same simplified CARTOON clothes, same flat colors, same CARTOON hairstyle, same CARTOON face in EVERY panel.
-- AVOID ANY HINT OF PHOTO-REALISTIC DETAIL on the character's face, skin, or hair.
+CHARACTER IDENTITY PRESERVATION:
+- Transform the main character from the reference image into a SIMPLIFIED CARTOON AVATAR
+- Maintain the same facial features: eye shape, nose shape, mouth shape, jawline, and ear shape
+- Preserve hair color, hair style, and skin tone from the reference image
+- Keep the same body proportions and basic body shape
+- Render all features with SIMPLIFIED LINES AND FLAT SHAPES
+- Apply the same simplified CARTOON appearance consistently across all panels
+- Use the same CARTOON clothes, flat colors, and CARTOON hairstyle in every panel
+- Ensure the character is instantly recognizable as the cartoonized version of the reference person
 
-STYLE REQUIREMENTS (NON-NEGOTIABLE):
-- Hand-drawn comic book illustration, HIGHLY CARTOONIZED
-- EXTREMELY THICK black ink outlines around ALL characters and objects.
-- COMPLETELY FLAT, SOLID COLORS (ABSOLUTELY NO gradients, NO soft shading, NO color blending)
-- MINIMAL cel shading ONLY (1–2 harsh shadow tones max, applied as solid blocks of color)
-- Halftone dot texture for shadows and backgrounds, IF APPLICABLE, otherwise solid blocks.
-- Bold, high-contrast, PRIMARY color palette.
-- Clearly exaggerated, cartoon proportions and expressions.
-- Strictly 2D illustration ONLY.
+ART STYLE REQUIREMENTS:
+- Hand-drawn comic book illustration style with HIGHLY CARTOONIZED appearance
+- EXTREMELY THICK black ink outlines around ALL characters, objects, and elements
+- COMPLETELY FLAT, SOLID COLORS using vibrant, saturated primary colors
+- Use solid color blocks with NO gradients, NO soft shading, NO color blending
+- Apply MINIMAL cel shading using 1-2 harsh shadow tones as solid blocks of color
+- Use halftone dot texture for shadows and backgrounds when applicable
+- Apply bold, high-contrast PRIMARY color palette
+- Use clearly exaggerated cartoon proportions and expressions
+- Render as strictly 2D illustration with graphic, simplified shapes
+- Maintain intentional simplicity with minimal detail and clear graphic forms
 
-REFERENCE STYLE:
-- Classic Marvel / DC comic books (Silver–Bronze Age), focusing on the most simplified examples
+REFERENCE STYLE INSPIRATION:
+- Classic Marvel / DC comic books from Silver-Bronze Age (simplified examples)
 - Saturday morning superhero comics for young children
-- Vintage children's comic books from printed pages, specifically those with very simple, graphic art.
-- Think Hanna-Barbera, Archie Comics, or very early superhero designs.
+- Vintage children's comic books from printed pages with simple, graphic art
+- Hanna-Barbera animation style
+- Archie Comics illustration style
+- Very early superhero comic designs
 
-STRICTLY FORBIDDEN (DO NOT USE):
-- Photorealism, semi-realism, hyperrealism
-- Semi-realistic illustration, detailed illustration
-- Digital painting, painterly styles, fine art rendering
-- AI-art look, sophisticated rendering
-- Pixar, Disney, DreamWorks style (TOO DETAILED)
-- Anime or manga style (TOO DETAILED)
-- 3D rendering
-- Soft lighting, subtle lighting, atmospheric lighting
-- Airbrushed shading, feathered edges
-- Painterly textures, complex fabric textures
-- Realistic skin, fabric, hair, or lighting details
-- Cinematic lighting, depth-of-field blur, bokeh
-- Any form of subtle shading or texture mapping.
+CHARACTER TRANSFORMATION PROCESS:
+- Use the uploaded photo ONLY to establish the core CARTOON IDENTITY and basic body shape
+- Extract facial features, hair style, and clothing from the reference image
+- Transform these elements into BOLD, GRAPHIC, CARTOON COMIC VERSION
+- Render with simplified lines, flat colors, and cartoon proportions
+- Ensure the character looks like a drawing, not a photograph
 
-IMPORTANT CHARACTER RULES:
-- The uploaded photo is ONLY for establishing the core CARTOON IDENTITY and basic body shape.
-- DO NOT copy lighting, skin texture, or realism from the photo AT ALL.
-- Convert the character into a BOLD, GRAPHIC, CARTOON COMIC VERSION.
-- The character must be instantly recognizable as the same *cartoonized* person from the reference image.
+LAYOUT & COMPOSITION REQUIREMENTS:
+- Panel Layout: ${panelLayout}
+- Aspect Ratio: ${aspectRatio}
+- Use clean, simple framing like a printed comic panel
+- Ensure complete characters are visible (no cropped faces or limbs)
+- Center the main cartoon action clearly within the frame
+- Maintain proper composition with balanced elements
 
-LAYOUT & COMPOSITION:
-- ${panelLayout}
-- ${aspectRatio}
-- Clean, simple framing like a printed comic panel.
-- No cropped faces or limbs.
-- Center the main cartoon action clearly.
+TECHNICAL REQUIREMENTS:
+- High quality, colorful, professional comic book illustration
+- Clear character designs with well-defined cartoon features
+- Proper composition that fits the panel format
+- Maintain proper proportions without distortion or stretching
+- Balanced framing with important elements centered
+- Vibrant, kid-friendly color palette
+- Consistent visual style throughout the panel
+- Output as a clean, printable comic book panel image
 
-FINAL CHECK BEFORE OUTPUT:
-Ask yourself: "Does this image look like a *very simple, hand-drawn, solid-color* children's comic book panel?"
-If not, FIX IT until it is. Is it cartoonish enough? Is it flat enough?
-
-OUTPUT ONLY THE IMAGE. NO TEXT.
+OUTPUT REQUIREMENT:
+Generate ONLY the image. Do not include any text, captions, or dialogue in the image itself.
 `;
 
   try {
