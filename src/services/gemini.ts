@@ -375,8 +375,8 @@ export const generatePanelImage = async (
     ? characterDescriptions
     : characterNames.map(name => createCharacterDescription(name, originalImageBase64));
 
-  // All images should be in 16:9 aspect ratio
-  const aspectRatio = "16:9 landscape format (wider than tall)";
+  // All images must be in 4:3 aspect ratio regardless of input image dimensions
+  const aspectRatio = "4:3 landscape format (wider than tall) - MANDATORY: Output must be 4:3 even if input image has different aspect ratio";
   
   const panelLayout = panelIndex === 5
     ? "full-width panel at the bottom of the page"
@@ -401,6 +401,12 @@ DETAILED STYLE REQUIREMENTS
 IMAGE TYPE:
 This image MUST be a professional comic book/manga panel illustration suitable for all ages.
 The aesthetic must be high-quality comic book/manga illustration style with professional appearance.
+
+CRITICAL ASPECT RATIO REQUIREMENT:
+- The output image MUST be in 4:3 aspect ratio (landscape format, wider than tall).
+- IGNORE the aspect ratio of the input/reference image completely.
+- The generated output MUST ALWAYS be 4:3 regardless of the uploaded image's dimensions (square, portrait, landscape, etc.).
+- Do NOT match or preserve the input image's aspect ratio - always output 4:3.
 
 CHARACTER IDENTITY PRESERVATION:
 - Transform the main character from the reference image into a comic book/manga character
@@ -441,11 +447,13 @@ CHARACTER TRANSFORMATION PROCESS:
 
 LAYOUT & COMPOSITION REQUIREMENTS:
 - Panel Layout: ${panelLayout}
-- Aspect Ratio: ${aspectRatio}
+- CRITICAL ASPECT RATIO REQUIREMENT: The output image MUST be in 4:3 aspect ratio (landscape format, wider than tall).
+- IGNORE the aspect ratio of the input/reference image - the generated output MUST ALWAYS be 4:3 regardless of the uploaded image's dimensions.
 - Use clean, simple framing like a printed comic panel
 - Ensure complete characters are visible (no cropped faces or limbs)
-- Center the main cartoon action clearly within the frame
+- Center the main action clearly within the frame
 - Maintain proper composition with balanced elements
+- The image must be exactly 4:3 landscape format - do not match the input image's aspect ratio
 
 TECHNICAL REQUIREMENTS:
 - High quality, colorful, professional comic book/manga illustration
