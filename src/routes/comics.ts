@@ -290,23 +290,23 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     const comic = rows[0];
     
     // Parse JSON fields
-    let characterNames: string[] = [];
-    let panels: any = {};
+    let parsedCharacterNames: string[] = [];
+    let parsedPanels: any = {};
     
     try {
-      characterNames = typeof comic.character_names === 'string' 
+      parsedCharacterNames = typeof comic.character_names === 'string' 
         ? JSON.parse(comic.character_names) 
         : comic.character_names;
     } catch (e) {
-      characterNames = [];
+      parsedCharacterNames = [];
     }
     
     try {
-      panels = typeof comic.panels === 'string' 
+      parsedPanels = typeof comic.panels === 'string' 
         ? JSON.parse(comic.panels) 
         : comic.panels;
     } catch (e) {
-      panels = {};
+      parsedPanels = {};
     }
 
     // Convert image paths to full URLs with backend domain
@@ -322,11 +322,11 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 
     // Convert panel imageUrls to full URLs
     const panelsWithFullUrls = {
-      box1: panels.box1 ? { ...panels.box1, imageUrl: panels.box1.imageUrl ? convertImagePath(panels.box1.imageUrl) : undefined } : panels.box1,
-      box2: panels.box2 ? { ...panels.box2, imageUrl: panels.box2.imageUrl ? convertImagePath(panels.box2.imageUrl) : undefined } : panels.box2,
-      box3: panels.box3 ? { ...panels.box3, imageUrl: panels.box3.imageUrl ? convertImagePath(panels.box3.imageUrl) : undefined } : panels.box3,
-      box4: panels.box4 ? { ...panels.box4, imageUrl: panels.box4.imageUrl ? convertImagePath(panels.box4.imageUrl) : undefined } : panels.box4,
-      box5: panels.box5 ? { ...panels.box5, imageUrl: panels.box5.imageUrl ? convertImagePath(panels.box5.imageUrl) : undefined } : panels.box5,
+      box1: parsedPanels.box1 ? { ...parsedPanels.box1, imageUrl: parsedPanels.box1.imageUrl ? convertImagePath(parsedPanels.box1.imageUrl) : undefined } : parsedPanels.box1,
+      box2: parsedPanels.box2 ? { ...parsedPanels.box2, imageUrl: parsedPanels.box2.imageUrl ? convertImagePath(parsedPanels.box2.imageUrl) : undefined } : parsedPanels.box2,
+      box3: parsedPanels.box3 ? { ...parsedPanels.box3, imageUrl: parsedPanels.box3.imageUrl ? convertImagePath(parsedPanels.box3.imageUrl) : undefined } : parsedPanels.box3,
+      box4: parsedPanels.box4 ? { ...parsedPanels.box4, imageUrl: parsedPanels.box4.imageUrl ? convertImagePath(parsedPanels.box4.imageUrl) : undefined } : parsedPanels.box4,
+      box5: parsedPanels.box5 ? { ...parsedPanels.box5, imageUrl: parsedPanels.box5.imageUrl ? convertImagePath(parsedPanels.box5.imageUrl) : undefined } : parsedPanels.box5,
     };
 
     res.json({
@@ -335,7 +335,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
       createdAt: new Date(comic.created_at).getTime(),
       category: comic.category,
       sourceType: comic.source_type,
-      characterNames,
+      characterNames: parsedCharacterNames,
       originalImage: originalImageUrl,
       panels: panelsWithFullUrls,
     });

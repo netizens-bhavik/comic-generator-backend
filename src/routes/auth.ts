@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 import pool from '../config/database.js';
 
 const router = express.Router();
@@ -45,10 +46,15 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
+    const expiresIn: StringValue | number = (process.env.JWT_EXPIRES_IN || '7d') as StringValue;
+    const signOptions: SignOptions = {
+      expiresIn
+    };
+
     const token = jwt.sign(
       { userId: userId.toString(), email },
       jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      signOptions
     );
 
     res.status(201).json({
@@ -98,10 +104,15 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
+    const expiresIn: StringValue | number = (process.env.JWT_EXPIRES_IN || '7d') as StringValue;
+    const signOptions: SignOptions = {
+      expiresIn
+    };
+
     const token = jwt.sign(
       { userId: user.id.toString(), email: user.email },
       jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      signOptions
     );
 
     res.json({
