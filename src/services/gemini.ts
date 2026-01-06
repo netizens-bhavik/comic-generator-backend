@@ -4,7 +4,7 @@ import {
   createCharacterDescription,
   extractCharacterDescriptionsFromScript,
   CharacterDescription
-} from "./characterConsistency";
+} from "./characterConsistency.js";
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
