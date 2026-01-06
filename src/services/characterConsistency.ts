@@ -27,7 +27,7 @@ export interface CharacterConsistencyConfig {
  */
 export const defaultConsistencyConfig: CharacterConsistencyConfig = {
   maintainConsistentCast: true,
-  consistencyPrompt: "CRITICAL: The character MUST maintain the exact same appearance, facial features, clothing, and visual style as described. No changes in clothing, hair, facial features, or physical characteristics between panels. Characters should be rendered in comic book/cartoon style (NOT photorealistic) while maintaining their recognizable appearance.",
+  consistencyPrompt: "CRITICAL: The character MUST maintain the exact same appearance, facial features, clothing, and visual style as described. No changes in clothing, hair, facial features, or physical characteristics between panels. Characters should be rendered in proper comic book/manga illustration style while maintaining their recognizable appearance.",
   exampleCharacters: {
     "Hero": "A character with consistent facial features, hair color, eye color, and clothing style throughout all panels, rendered in comic book illustration style.",
     "Sidekick": "A character with consistent appearance matching their initial description in every panel, rendered in comic book illustration style."
@@ -150,38 +150,19 @@ export function buildImagePromptWithConsistency(
 
   const mainCharacter = characterNames[0];
   const characterContext = characterNames.length > 0
-    ? `The main character ${mainCharacter} MUST closely resemble the person in ${referenceImageContext}, but transformed into comic book/cartoon style (NOT photorealistic). Maintain their facial features, clothing, and appearance, but render them as a cartoon character with bold outlines and vibrant colors.`
+    ? `The main character ${mainCharacter} MUST closely resemble the person in ${referenceImageContext}, rendered in proper comic book/manga illustration style. Maintain their facial features, clothing, and appearance with bold lines and vibrant colors.`
     : "";
 
   return `
-CRITICAL: Create this image EXCLUSIVELY in classic American comic book illustration style. This is a children's comic book panel designed for ages 5-8.
-
-STYLE REQUIREMENTS (MANDATORY):
-- STYLE: Classic American comic book illustration (like Marvel, DC Comics, or Sunday newspaper comics)
-- ART STYLE: Hand-drawn cartoon illustration with bold black ink outlines
-- COLOR STYLE: Flat, vibrant, saturated colors using solid color blocks
-- SHADING TECHNIQUE: Use halftone dots, crosshatching, or solid color blocks for shadows
-- OUTLINES: Thick black ink outlines around ALL characters, objects, and elements
-- APPEARANCE: Printed comic book page aesthetic with intentional simplicity
-- KID-FRIENDLY: Bright, cheerful, cartoon-like appearance suitable for children ages 5-8
-- RENDERING: 2D illustration with graphic, simplified shapes
-- DETAIL LEVEL: Minimal detail with clear graphic shapes and bold forms
-
+Create a comic book panel illustration.
+Style: Comic book/manga style, bold lines, vibrant colors, professional illustration quality.
 Scene: ${enhancedScene}
 
 ${characterContext}
 
 ${consistencyPrompt}
 
-Additional Requirements:
-- High quality, colorful, professional comic book illustration
-- Clear character designs with well-defined cartoon features
-- Proper composition that fits the panel format
-- Maintain proper proportions without distortion or stretching
-- Balanced framing with important elements centered
-- Vibrant, kid-friendly color palette
-- Characters rendered as cartoon versions of the reference image
-- Consistent visual style throughout the panel
+Ensure the image is high quality and colorful. The main character in this scene MUST resemble the person in the provided reference image, rendered in proper comic book/manga illustration style.
 `.trim();
 }
 
