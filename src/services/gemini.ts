@@ -375,11 +375,8 @@ export const generatePanelImage = async (
     ? characterDescriptions
     : characterNames.map(name => createCharacterDescription(name, originalImageBase64));
 
-  // Determine aspect ratio based on panel position
-  // Panels 1-4 are side-by-side (roughly square/landscape), Panel 5 is full width (wider landscape)
-  const aspectRatio = panelIndex === 5 
-    ? "16:9 landscape format (wider than tall)" 
-    : "4:3 or square format (slightly wider than tall)";
+  // All images should be in 16:9 aspect ratio
+  const aspectRatio = "16:9 landscape format (wider than tall)";
   
   const panelLayout = panelIndex === 5
     ? "full-width panel at the bottom of the page"
